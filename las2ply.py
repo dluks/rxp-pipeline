@@ -6,6 +6,26 @@ import argparse
 import pdal
 
 
+def tile_points(args):
+    cmds = []
+    reader = {"type": "readers.las", "filename": os.path.join(args.project, "*.las")}
+    cmds.append(reader)
+    merge = {"type": "filters.merge"}
+    cmds.append(merge)
+    split = {
+        "type": "filters.splitter",
+        "length": 10,
+    }
+    cmds.append(split)
+    writer = {"type": "writers.las", "filename": "tile_#.las"}
+    cmds.append(writer)
+
+    # link commmands and pass to pdal
+    JSON = json.dumps(cmds)
+    pipeline = pdal.Pipeline(JSON)
+    pipeline.execute()
+
+
 def process_tile(tile, args):
     """Convert las tile to ply
 
@@ -36,22 +56,35 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--project", "-p", required=True, type=str, help="LAS files directory"
+        "-p", "--project", required=True, type=str, help="LAS files directory"
     )
-    parser.add_argument("--odir", type=str, default=".", help="output directory")
+    parser.add_argument("--odir", type=str, default=".", help="Output directory")
     parser.add_argument(
-        "--pre-tiled",
-        action="store_false",
-        help="Data is pre-tiled and does not need additional tiling",
+        "--tile",
+        action="store_true",
+        help="Boolean indicating whether or not the point cloud(s) should be tiled according to the --tilesize",
     )
     parser.add_argument(
-        "--num-prcs", type=int, default=10, help="number of cores to use"
+        "-ts",
+        "--tilesize",
+        default=None,
+        help="Size with which to tile (or re-tile) point cloud(s). If files are already tiled then they will be re-tiled.",
     )
-    parser.add_argument("--verbose", action="store_true", help="print something")
+    parser.add_argument(
+        "--num-prcs", type=int, default=10, help="Number of cores to use"
+    )
+    parser.add_argument("--verbose", action="store_true", help="Print more stuff")
 
     args = parser.parse_args()
 
     args.las = list(enumerate(sorted(glob.glob(os.path.join(args.project, "*.las")))))
+
+    if args.tile and not args.tilesize:
+        # Set default tilesize
+        args.tilesize = 15
+
+    if args.tilesize and not args.tile:
+        parser.error("--tile must be True if --tilesize is provided.")
 
     # read in and write to ply
     try:
