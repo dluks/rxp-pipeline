@@ -1,11 +1,12 @@
-import os
-import glob
-import multiprocessing
-import json
 import argparse
-import pdal
-import tempfile
+import glob
+import json
+import multiprocessing
+import os
 import shutil
+import tempfile
+
+import pdal
 
 # TODO: Set better tiling origin
 # TODO: Allow reflectance and deviation filtering
@@ -18,14 +19,15 @@ def tile_points(args):
     Args:
         args (object): Argparse Namespace object containing project and output directories
     """
-    las = glob.glob(os.path.join(args.project, "*.las"))
+    num_files = len(glob.glob(os.path.join(args.project, "*.las")))
+
     cmds = []
     reader = {
         "type": "readers.las",
         "filename": os.path.join(args.project, "*.las"),
     }
     cmds.append(reader)
-    if len(las) > 1:
+    if num_files > 1:
         merge = {"type": "filters.merge"}
         cmds.append(merge)
     split = {
@@ -51,8 +53,8 @@ def process_tile(tile, args):
     """Convert las tile to ply
 
     Args:
-        tile (list): List of tuples containing tile ID and tile filepath,
-            e.g. [(0, "path/to/tile.las")]
+        tile (tuple): Tuple containing tile ID and tile filepath,
+            e.g. (0, "path/to/tile.las")
         args (object): argparse.Namespace object containing CLI argument values
     """
     if args.verbose:
@@ -86,6 +88,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-o", "--odir", type=str, default=".", help="Output directory")
     parser.add_argument(
+        "-t",
         "--tile",
         action="store_true",
         help="Boolean indicating whether or not the point cloud(s) should be tiled according to the --tilesize",
