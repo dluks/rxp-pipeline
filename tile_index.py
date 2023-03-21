@@ -3,13 +3,8 @@ import glob
 import json
 import multiprocessing
 import os
-import sys
 
-import numpy as np
-import pandas as pd
 import pdal
-import ply_io
-from tqdm import tqdm
 
 
 def tile_index(ply, args):
@@ -41,15 +36,9 @@ def tile_index(ply, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-i", "--idir", type=str, required=True, help="directory where tiles are stored"
-    )
-    parser.add_argument(
-        "-t", "--tile-index", default="tile_index.dat", help="tile index file"
-    )
-    parser.add_argument(
-        "--num-prcs", type=int, default=10, help="number of cores to use"
-    )
+    parser.add_argument("-i", "--idir", type=str, required=True, help="directory where tiles are stored")
+    parser.add_argument("-t", "--tile-index", default="tile_index.dat", help="tile index file")
+    parser.add_argument("--num-prcs", type=int, default=10, help="number of cores to use")
     parser.add_argument("--verbose", action="store_true", help="print something")
     args = parser.parse_args()
 
