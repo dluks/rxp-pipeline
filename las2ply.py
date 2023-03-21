@@ -100,6 +100,11 @@ if __name__ == "__main__":
         help="Size with which to tile (or re-tile) point cloud(s). If files are already tiled then they will be re-tiled.",
     )
     parser.add_argument(
+        "--keep-ids",
+        action="store_true",
+        help="Enable to use filenames as tile IDs. Can only be used if --tile is False.",
+    )
+    parser.add_argument(
         "--num-prcs", type=int, default=10, help="Number of cores to use"
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Print more stuff")
@@ -113,6 +118,11 @@ if __name__ == "__main__":
     if args.tilesize and not args.tile:
         parser.error("--tile must be True if --tilesize is provided.")
 
+    if args.tile and args.keep_ids:
+        parser.error(
+            "Cannot perform tiling (--tile) and keep original tile IDs (--keep-ids) together."
+        )
+
     args.tile_dir = None
 
     if args.tile:
@@ -122,6 +132,13 @@ if __name__ == "__main__":
         tile_points(args)
         args.las = list(
             enumerate(sorted(glob.glob(os.path.join(args.tile_dir, "*.las"))))
+        )
+    elif args.keep_ids:
+        args.las = list(
+            [
+                (os.path.splitext(os.path.basename(fn))[0], fn)
+                for fn in glob.glob(os.path.join(args.tile_dir, "*.las"))
+            ]
         )
     else:
         args.las = list(
