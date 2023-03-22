@@ -137,7 +137,7 @@ if __name__ == "__main__":
         args.las = list(
             [
                 (os.path.splitext(os.path.basename(fn))[0], fn)
-                for fn in glob.glob(os.path.join(args.tile_dir, "*.las"))
+                for fn in glob.glob(os.path.join(args.project, "*.las"))
             ]
         )
     else:
