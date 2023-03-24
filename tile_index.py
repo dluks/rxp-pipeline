@@ -28,7 +28,8 @@ def tile_index(ply, args):
     JSON = pipeline.metadata
     X = JSON['metadata']['filters.stats']['statistic'][0]['average']
     Y = JSON['metadata']['filters.stats']['statistic'][1]['average']
-    T = int(os.path.split(ply)[1].split('.')[0])
+    T = os.path.split(ply)[1].split('.')[0]
+    T = int(T) if not isinstance(T, int) and T.isdigit() else T
     
     with args.Lock:
         with open(args.tile_index, "a") as fh:
