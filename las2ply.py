@@ -1,3 +1,4 @@
+"""Converts las files to ply files."""
 import argparse
 import glob
 import json
@@ -8,7 +9,6 @@ import tempfile
 
 import pdal
 
-# TODO: Set better tiling origin
 # TODO: Allow reflectance and deviation filtering
 
 
@@ -44,8 +44,8 @@ def tile_points(args):
     cmds.append(writer)
 
     # link commmands and pass to pdal
-    JSON = json.dumps(cmds)
-    pipeline = pdal.Pipeline(JSON)
+    pdal_cmds = json.dumps(cmds)
+    pipeline = pdal.Pipeline(pdal_cmds)
     pipeline.execute()
 
 
@@ -67,21 +67,20 @@ def process_tile(tile, args):
 
     reader = {"type": "readers.las", "filename": tile[-1]}
     writer = {
-        "type": f"writers.ply",
+        "type": "writers.ply",
         "storage_mode": "little endian",
         "dims": "X, Y, Z, Reflectance, Deviation, ReturnNumber, NumberOfReturns,",
         "filename": os.path.join(args.odir, f"{tile_id_str}.ply"),
     }
-    JSON = json.dumps([reader, writer])
+    pdal_cmds = json.dumps([reader, writer])
     try:
-        pipeline = pdal.Pipeline(JSON)
+        pipeline = pdal.Pipeline(pdal_cmds)
         pipeline.execute()
     except Exception as e:
         print(e)
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-p", "--project", required=True, type=str, help="path to LAS files directory"
@@ -161,4 +160,3 @@ if __name__ == "__main__":
 
     if args.tile_dir:
         shutil.rmtree(args.tile_dir)
-    # os.removedirs(args.tile_dir.name)
